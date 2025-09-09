@@ -2,10 +2,23 @@
 
 #[ink::contract]
 mod Receiver {
+    use ink::prelude::vec::Vec;
+    use ink::scale::{Decode, Error as ScaleError};
 
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
     pub enum Action {
         Arbitrage,
         Other,
+    }
+
+    #[ink(event)]
+    pub struct ActionPerformed {
+        #[ink(topic)]
+        action: Action,
+        amount: Balance,
+        fee: Balance,
     }
 
     #[ink(storage)]
@@ -17,7 +30,7 @@ mod Receiver {
     }
 
     impl Receiver {
-        /// Constructor that initializes the `bool` value to the given `init_value`.
+        /// Constructor that initializes the receiver with a lender.
         #[ink(constructor)]
         pub fn new(lender: AccountId) -> Self {
             Self {
@@ -42,15 +55,17 @@ mod Receiver {
             if initiator != Self::env().account_id() {
                 return false;
             }
-            let decoded_action = self
-                .decode_action(data)
-                .map_err(|_| "FlashBorrower: Unable to decode action".to_string())?;
+
+            let decoded_action = match self.decode_action(data) {
+                Ok(action) => action,
+                Err(_) => return false,
+            };
 
             match decoded_action {
                 Action::Arbitrage => {
                     // Mock an arbitrage action, this should be an EV+ operation
                     self.action = Action::Arbitrage;
-                    // Profitable logic would go here
+                    // TODO: Profitable logic would go here
                     // Emit event
                     Self::env().emit_event(ActionPerformed {
                         action: Action::Arbitrage,
@@ -67,15 +82,13 @@ mod Receiver {
                         fee,
                     });
                 }
-                _ => return false,
             }
 
             true
         }
 
         /// Decodes the data into an action
-        #[ink(message)]
-        pub fn decode_action(&self, data: Vec<u8>) -> Result<Action, scale::Error> {
+        fn decode_action(&self, data: Vec<u8>) -> Result<Action, ScaleError> {
             Action::decode(&mut &data[..])
         }
     }
