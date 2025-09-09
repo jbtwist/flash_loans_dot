@@ -1,0 +1,20 @@
+[package]
+name = "flash-mint"
+version = "0.1.0"
+authors = ["Rodrigo Ramos X <rodrx20@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+ink = { workspace = true }
+
+[dev-dependencies]
+ink_e2e = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = ["ink/std"]
+ink-as-dependency = []
+e2e-tests = []
