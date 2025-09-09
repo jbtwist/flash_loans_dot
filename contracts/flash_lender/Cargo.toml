@@ -1,11 +1,7 @@
 [package]
 name = "flash_lender"
 version = "0.1.0"
-<<<<<<<< HEAD:contracts/flash_lender/Cargo.toml
 authors = ["Lucas Grasso<lucasgrassoramos@gmail.com>"]
-========
-authors = ["lucas", "raa", "juan"]
->>>>>>>> 28fce48 (feat: flash_mint contract scaffolding):flash-loan/Cargo.toml
 edition = "2021"
 
 [dependencies]

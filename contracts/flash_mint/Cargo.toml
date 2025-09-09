@@ -1,11 +1,8 @@
-other_contract = { path = "other_contract", default-features = false, features = ["ink-as-dependency"] }
+[package]
+name = "flash_mint"
+version = "0.1.0"
+authors = ["Rodrigo Ramos X <rodrx20@gmail.com>"]
+edition = "2021"
 
-# -- snip --
-
-[features]
-default = ["std"]
-std = [
-    "ink/std",
-    # -- snip --
-    "other_contract/std",
-]
+[lib]
+path = "lib.rs"
