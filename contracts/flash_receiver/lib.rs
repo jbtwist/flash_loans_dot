@@ -8,9 +8,6 @@ mod Receiver {
         Other,
     }
 
-    /// Defines the storage of your contract.
-    /// Add new fields to the below struct in order
-    /// to add new static storage fields to your contract.
     #[ink(storage)]
     pub struct Receiver {
         /// Stores the receiver lender's AccountId.
@@ -29,17 +26,7 @@ mod Receiver {
             }
         }
 
-        /// Constructor that initializes the `bool` value to `false`.
-        ///
-        /// Constructors can delegate to other constructors.
-        #[ink(constructor)]
-        pub fn default() -> Self {
-            Self::new(Default::default())
-        }
-
-        /// A message that can be called on instantiated contracts.
-        /// This one flips the value of the stored `bool` from `true`
-        /// to `false` and vice versa.
+        /// Implements the logic for handling a flash loan.
         #[ink(message)]
         pub fn on_flash_loan(
             &mut self,
