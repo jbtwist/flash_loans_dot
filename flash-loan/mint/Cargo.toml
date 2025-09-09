@@ -1,0 +1,11 @@
+other_contract = { path = "other_contract", default-features = false, features = ["ink-as-dependency"] }
+
+# -- snip --
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    # -- snip --
+    "other_contract/std",
+]
