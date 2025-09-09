@@ -66,13 +66,12 @@ mod flash_lender {
 		/// No safety checks are performed.
 		///
 		/// ## Params:
-		/// - `token`: The loan currency.
 		/// - `amount`: The amount of tokens lent.
 		///
 		/// ## Returns:
 		/// - `u256`: The fee to be charged on top of the returned principal.
 		fn _flash_fee(
-			token: Address,
+			fee: u128,
 			amount: u128
 		) -> u128 {
 			amount * fee / 10000;
@@ -180,7 +179,7 @@ mod flash_lender {
 		/// ## Returns:
 		/// - A boolean indicating whether the callback succeeded.
 		fn _call_IERC3156FlashBorrower_callback(
-			sender: AccountId
+			sender: AccountId,
 			receiver: Address,
 			token: Address,
 			amount: u128,
@@ -227,7 +226,7 @@ mod flash_lender {
 			data: Bytes
 		) -> Result<Bool> {
 			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
-			let fee = self._flash_fee(token, amount);call_IERC3156FlashBorrower_callback
+			let fee = self._flash_fee(self.fee, amount);call_IERC3156FlashBorrower_callback
 			assert!(self._call_ERC20_transfer(receiver, token, amount), Error::TransferFailed);
 			assert!(self._call_IERC3156FlashBorrower_callback(self.env.caller(), receiver, token, amount, fee, data), Error::CallbackFailed);
 			assert!(self._call_ERC20_transfer_from(self.env().address(), receiver, token, amount), Error::RepayFailed);
@@ -249,7 +248,7 @@ mod flash_lender {
 			amount: u128
 		) -> Result<u128> {
 			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
-			self._flash_fee(token, amount)
+			self._flash_fee(self.fee, amount)
 		}
 
 		/// The amount of currency available to be lent.

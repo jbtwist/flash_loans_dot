@@ -41,7 +41,7 @@ mod flash_mint_contract {
 
         #[ink(message)]
         fn max_flash_loan(&self, token: AccountId) -> Result<u128> {
-            return U128.MAX - Self::total_supply();
+            return U128.MAX - self.total_supply();
         }
 
         #[ink(message)]
@@ -50,19 +50,18 @@ mod flash_mint_contract {
             token: AccountId,
             amount: u128,
         ) -> u128 {
-            ensure!(
-                token == self::env::address(),
+            assert!(
+                token == ink::env::address(),
                 "FlashMinter: Unsupported currency"
             );
-            return Self::_flash_fee(token, amount);
+            self._flash_fee(token, amount)
         }
 
         fn _flash_fee(
-            &self,
-            token: AddressId,
+            fee: u128,
             amount: u128
-        ) -> Result<u128> {
-            return amount * fee / 10000;
+        ) -> u128 {
+            amount * fee / 10000
         }
 
         #[ink(message)]
@@ -73,25 +72,38 @@ mod flash_mint_contract {
             amount: u128,
             data: Vec<u8>,
         ) -> Result<bool> {
-            ensure!(
-                token == Self::env::address(),
+            assert!(
+                token == ink::env::address(),
                 "FlashMinter: Unsupported currency"
             );
 
-            let fee: u128 = Self::_flash_fee(token, amount);
-            Self::_mint(receiver, amount);
-            ensure!(
-                receiver.onFlashLoan(Self::env::caller(), token, amount, fee, data) == callback_success,
+            let fee: u128 = self.flash_fee(token, amount);
+            let sender = self.env.caller();
+
+			build_call::<DefaultEnvironment>()
+				.call(receiver)
+				.call_v1()
+				.gas_limit(1000)
+				.exec_input(
+					ExecutionInput::new(Selector::new(ink::selector_bytes!("mint")))
+						.push_arg(receiver)
+						.push_arg(amount)
+				)
+				.returns::<bool>()
+				.invoke()
+                
+            assert!(
+                receiver.onFlashLoan(ink::env::caller(), token, amount, fee, data) == callback_success,
                 "FlashMinter: Callback failed"
             );
-            let _allowance: u128 = Self::allowance(receiver, Self::env::address());
-            ensure!(
+            let _allowance: u128 = Self::allowance(receiver, ink::env::address());
+            assert!(
                 _allowance >= (amount + fee),
                 "FlashMinter: Repay not approved"
             );
-            self::_approve(receiver, self::env::address(), _allowance - (amount + fee));
+            self::_approve(receiver, ink::env::address(), _allowance - (amount + fee));
             self::_burn(receiver, amount + fee);
-            return Ok(true);
+            Ok(true);
         }
     }
 }
@@ -100,9 +112,13 @@ mod flash_mint_contract {
 mod tests {
     use super::*;
 
-    #[test]
-    fn mint_happy_path_testing() {}
+    #[ink::test]
+    fn mint_happy_path_testing() {
+        // let flash_mint_contract = 
+        assert_ok!(FlashMinter::default());
+        
+    }
 
-    #[test]
+    #[ink::test]
     fn mint_errors_testing() {}
 }
