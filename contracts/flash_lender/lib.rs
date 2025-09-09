@@ -1,7 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+pub mod traits;
+
 #[ink::contract]
 mod flash_lender {
+	use traits::FlashLender;
+
 	#[ink(storage)]
 	#[derive(SpreadAllocate)]
 	pub struct FlashLender {
@@ -45,68 +49,6 @@ mod flash_lender {
 				}
 				contract.fee = fee;
 			})
-		}
-
-		/// Loan `amount` tokens to `receiver`, and takes it back plus a `flashFee` after the callback.
-		///
-		/// ## Params:
-		/// - `receiver`: The contract receiving the tokens.  
-		///   Must implement the `onFlashLoan(address user, uint256 amount, uint256 fee, bytes calldata)` interface.
-		/// - `token`: The loan currency.
-		/// - `amount`: The amount of tokens lent.
-		/// - `data`: A data parameter to be passed on to the `receiver` for any custom use.
-		///
-		/// ## Returns:
-		/// - `bool`: True if the flash loan succeeds.
-		#[ink(message)]
-		pub fn flash_loan(
-			receiver: Address,
-			token: Address,
-			amount: u128,
-			data: Bytes
-		) -> Result<Bool> {
-			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
-			let fee = _flash_fee(token, amount);call_IERC3156FlashBorrower_callback
-			assert!(_call_ERC20_transfer(receiver, token, amount), Error::TransferFailed);
-			assert!(_call_IERC3156FlashBorrower_callback(receiver, token, amount, fee, data), Error::CallbackFailed);
-			assert!(_call_ERC20_transfer_from(receiver, token, amount), Error::RepayFailed);
-			Ok(true)
-        }
-
-		/// The fee to be charged for a given loan.
-		///
-		/// ## Params:
-		/// - `token`: The loan currency.
-		/// - `amount`: The amount of tokens lent.
-		///
-		/// ## Returns:
-		/// - `u256`: The fee to be charged on top of the returned principal.
-		#[ink(message)]
-		pub fn flash_fee(
-			token: Address,
-			amount: u128
-		) -> Result<u128> {
-			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
-			_flash_fee(token, amount)
-		}
-
-		/// The amount of currency available to be lent.
-		///
-		/// ## Params:
-		/// - `token`: The loan currency.
-		///
-		/// ## Returns:
-		/// - `u256`: The amount of `token` that can be borrowed.
-		#[ink(message)]
-		pub fn max_flash_loan(
-			token: Address
-		) -> Result<u128> {
-			let token_exists = self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
-			if token_exists {
-				Ok(_call_ERC20_balance_of(token, self.env().caller()))
-			} else {
-				Ok(0)
-			}
 		}
 
 		/// Internal function returning the fee to be charged for a given loan.  
@@ -246,6 +188,71 @@ mod flash_lender {
 				)
 				.returns::<bool>()
 				.invoke()
+		}
+	}
+
+
+	impl FlashLender for FlashLender {
+		/// Loan `amount` tokens to `receiver`, and takes it back plus a `flashFee` after the callback.
+		///
+		/// ## Params:
+		/// - `receiver`: The contract receiving the tokens.  
+		///   Must implement the `onFlashLoan(address user, uint256 amount, uint256 fee, bytes calldata)` interface.
+		/// - `token`: The loan currency.
+		/// - `amount`: The amount of tokens lent.
+		/// - `data`: A data parameter to be passed on to the `receiver` for any custom use.
+		///
+		/// ## Returns:
+		/// - `bool`: True if the flash loan succeeds.
+		#[ink(message)]
+		pub fn flash_loan(
+			receiver: Address,
+			token: Address,
+			amount: u128,
+			data: Bytes
+		) -> Result<Bool> {
+			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
+			let fee = Self::_flash_fee(token, amount);call_IERC3156FlashBorrower_callback
+			assert!(Self::_call_ERC20_transfer(receiver, token, amount), Error::TransferFailed);
+			assert!(Self::_call_IERC3156FlashBorrower_callback(receiver, token, amount, fee, data), Error::CallbackFailed);
+			assert!(Self::_call_ERC20_transfer_from(receiver, token, amount), Error::RepayFailed);
+			Ok(true)
+        }
+
+		/// The fee to be charged for a given loan.
+		///
+		/// ## Params:
+		/// - `token`: The loan currency.
+		/// - `amount`: The amount of tokens lent.
+		///
+		/// ## Returns:
+		/// - `u256`: The fee to be charged on top of the returned principal.
+		#[ink(message)]
+		pub fn flash_fee(
+			token: Address,
+			amount: u128
+		) -> Result<u128> {
+			self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
+			Self::_flash_fee(token, amount)
+		}
+
+		/// The amount of currency available to be lent.
+		///
+		/// ## Params:
+		/// - `token`: The loan currency.
+		///
+		/// ## Returns:
+		/// - `u256`: The amount of `token` that can be borrowed.
+		#[ink(message)]
+		pub fn max_flash_loan(
+			token: Address
+		) -> Result<u128> {
+			let token_exists = self.supported_tokens.get(token).unwrap_or(Error::UnsupportedCurrency)?;
+			if token_exists {
+				Ok(Self::_call_ERC20_balance_of(token, self.env().caller()))
+			} else {
+				Ok(0)
+			}
 		}
 	}
 }

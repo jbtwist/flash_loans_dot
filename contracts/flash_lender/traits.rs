@@ -1,0 +1,68 @@
+#![cfg_attr(not(feature = "std"), no_std, no_main)]
+
+//! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
+
+/// A trait for flash lending of ERC20 tokens, following the IERC3156 standard.
+#[ink::trait_definition]
+pub trait FlashLender {
+    /// Loan `amount` tokens to `receiver`, and take them back plus a `flashFee` after the callback.
+    ///
+    /// ## Params:
+    /// - `receiver`: The contract receiving the tokens.  
+    ///   Must implement the `onFlashLoan(address user, uint256 amount, uint256 fee, bytes calldata)` interface.
+    /// - `token`: The loan currency.
+    /// - `amount`: The amount of tokens lent.
+    /// - `data`: A data parameter to be passed on to the `receiver` for any custom use.
+    ///
+    /// ## Returns:
+    /// - `bool`: True if the flash loan succeeds.
+    #[ink(message)]
+    fn flash_loan(
+        &mut self,
+        receiver: AccountId,
+        token: AccountId,
+        amount: u128,
+        data: Vec<u8>,
+    ) -> Result<bool, Error>;
+
+    /// The fee to be charged for a given loan.
+    ///
+    /// ## Params:
+    /// - `token`: The loan currency.
+    /// - `amount`: The amount of tokens lent.
+    ///
+    /// ## Returns:
+    /// - `u128`: The fee to be charged on top of the returned principal.
+    #[ink(message)]
+    fn flash_fee(
+        &self,
+        token: AccountId,
+        amount: u128,
+    ) -> Result<u128, Error>;
+
+    /// The amount of currency available to be lent.
+    ///
+    /// ## Params:
+    /// - `token`: The loan currency.
+    ///
+    /// ## Returns:
+    /// - `u128`: The amount of `token` that can be borrowed.
+    #[ink(message)]
+    fn max_flash_loan(
+        &self,
+        token: AccountId,
+    ) -> Result<u128, Error>;
+}
+
+/// The Flash Lender error types.
+#[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode, scale_info::TypeInfo)]
+pub enum Error {
+    /// Returned if currency is not available.
+    UnsupportedCurrency,
+    /// Returned if external `IERC20` transfer call failed.
+    TransferFailed,
+    /// Returned if external `IERC3156FlashBorrower` callback failed.
+    CallbackFailed,
+    /// Returned if external `IERC20` repay call failed.
+    RepayFailed,
+}
