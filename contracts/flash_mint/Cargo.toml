@@ -1,0 +1,8 @@
+[package]
+name = "flash_mint"
+version = "0.1.0"
+authors = ["Rodrigo Ramos X <rodrx20@gmail.com>"]
+edition = "2021"
+
+[lib]
+path = "lib.rs"
