@@ -51,6 +51,17 @@ mod flash_lender {
 			})
 		}
 
+		/// Creates a default [`FlashLender`].
+		#[ink(constructor)]
+		pub fn default(
+			supported_tokens: Vec<AccountId>,
+			fee: u128
+		) -> Self {
+			ink_lang::utils::initialize_contract(|contract: &mut Self| {
+				contract.fee = 1;
+			})
+		}
+
 		/// Internal function returning the fee to be charged for a given loan.  
 		/// No safety checks are performed.
 		///
