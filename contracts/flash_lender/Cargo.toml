@@ -17,7 +17,6 @@ path = "lib.rs"
 default = ["std"]
 std = [
     "ink/std",
-    "flash_borrower/std",
 ]
 ink-as-dependency = []
 e2e-tests = []
