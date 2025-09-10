@@ -20,16 +20,16 @@ pub trait IERC3156FlashBorrower{
     /// ## Returns:
     /// - A `bool` hash signaling successful execution of the callback.
     #[ink(message)]
-    pub fn on_flash_loan(
+    fn on_flash_loan(
         &self,
         initiator: Address,
         token: Address,
         amount: u128,
         fee: u128,
-        data: Bytes,
+        data: Vec<u8>,
     ) -> bool;
 
-    /// Initiates a flash loan from the trusted lender.
+    /* /// Initiates a flash loan from the trusted lender.
     ///
     /// Prepares the encoded action data, checks and increases allowance if necessary,
     /// and requests a flash loan from the lender.
@@ -38,5 +38,5 @@ pub trait IERC3156FlashBorrower{
     /// - `token`: The address of the token to borrow.
     /// - `amount`: The amount of tokens to borrow.
     #[ink(message)]
-    fn flash_borrow(&self, token: Address, amount: u128);
+    fn flash_borrow(&self, token: Address, amount: u128); */
 }

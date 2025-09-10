@@ -11,13 +11,13 @@ mod flash_mint_contract {
     #[ink::trait_definition]
     fn total_supply() -> u128 {}
     #[ink::trait_definition]
-    fn allowance(owner: AccountId, spender: AccountId) -> u128 {}
+    fn allowance(owner: Address, spender: Address) -> u128 {}
     #[ink::trait_definition]
-    fn _approve(owner: AccountId, spender: AccountId, amount: u128) {}
+    fn _approve(owner: Address, spender: Address, amount: u128) {}
     #[ink::trait_definition]
-    fn _burn(account: AccountId, amount: u128) {}
+    fn _burn(account: Address, amount: u128) {}
     #[ink::trait_definition]
-    fn _mint(account: AccountId, amount: u128) {}
+    fn _mint(account: Address, amount: u128) {}
 
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
@@ -36,12 +36,12 @@ mod flash_mint_contract {
         }
 
         #[ink(message)]
-        pub fn max_flash_loan(&self, token: AccountId) -> Result<u128> {
+        pub fn max_flash_loan(&self, token: Address) -> Result<u128> {
             return U128.MAX - self.total_supply();
         }
 
         #[ink(message)]
-        pub fn flash_fee(&self, token: AccountId, amount: u128) -> u128 {
+        pub fn flash_fee(&self, token: Address, amount: u128) -> u128 {
             assert!(
                 token == ink::env::address(),
                 "FlashMinter: Unsupported currency"
@@ -56,8 +56,8 @@ mod flash_mint_contract {
         #[ink(message)]
         fn flash_loan(
             &self,
-            receiver: AccountId,
-            token: AccountId,
+            receiver: Address,
+            token: Address,
             amount: u128,
             data: Vec<u8>,
         ) -> Result<bool> {
@@ -72,7 +72,7 @@ mod flash_mint_contract {
             build_call::<DefaultEnvironment>()
                 .call(receiver)
                 .call_v1()
-                .gas_limit(1000)
+                .gas_limit(0)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("mint")))
                         .push_arg(receiver)

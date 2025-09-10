@@ -10,8 +10,8 @@ mod flash_receiver {
 
     #[ink(storage)]
     pub struct FlashBorrower {
-        /// Stores the receiver lender's AccountId.
-        lender: AccountId,
+        /// Stores the receiver lender's Address.
+        lender: Address,
         /// Stores the last action performed.
         action: Action,
     }
@@ -21,7 +21,7 @@ mod flash_receiver {
         #[ink(message)]
         fn on_flash_loan(
             &mut self,
-            initiator: AccountId,
+            initiator: Address,
             amount: Balance,
             fee: Balance,
             data: Vec<u8>,
@@ -59,7 +59,7 @@ mod flash_receiver {
         /// ## Parameters:
         /// - `lender_`: The trusted flash lender contract.
         #[ink(constructor)]
-        pub fn new(lender: AccountId) -> Self {
+        pub fn new(lender: Address) -> Self {
             Self {
                 lender,
                 action: Action::Arbitrage,

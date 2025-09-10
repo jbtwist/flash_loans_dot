@@ -1783,6 +1783,7 @@ dependencies = [
 name = "flash-borrower"
 version = "0.1.0"
 dependencies = [
+ "IERC3156Traits",
  "ink",
  "ink_e2e",
 ]

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "IERC3156Traits",
+    "IERC-3156-Traits",
     "contracts/flash-lender",
     "contracts/flash-borrower",
 ]
