@@ -6,7 +6,7 @@ pub mod traits;
 mod flash_receiver {
     use ink::prelude::vec::Vec;
     use ink::scale::{Decode, Error as ScaleError};
-    use crate::traits::{IERC3156FlashBorrower, Action};
+    use IERC3156Traits::{IERC3156FlashBorrower, Action};
 
     #[ink(storage)]
     pub struct FlashBorrower {

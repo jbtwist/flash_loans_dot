@@ -1,5 +1,5 @@
 [package]
-name = "IERC3156-traits"
+name = "IERC3156Traits"
 version = "0.1.0"
 authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>"]
 edition = "2021"

@@ -25,7 +25,7 @@ pub trait IERC3156FlashLender {
         token: AccountId,
         amount: u128,
         data: Vec<u8>,
-    ) -> Result<bool, Error>;
+    ) -> Result<bool>;
 
     /// The fee to be charged for a given loan.
     ///
@@ -36,7 +36,7 @@ pub trait IERC3156FlashLender {
     /// ## Returns:
     /// - `u128`: The fee to be charged on top of the returned principal.
     #[ink(message)]
-    fn flash_fee(&self, token: AccountId, amount: u128) -> Result<u128, Error>;
+    fn flash_fee(&self, token: AccountId, amount: u128) -> Result<u128>;
 
     /// The amount of currency available to be lent.
     ///
@@ -46,7 +46,7 @@ pub trait IERC3156FlashLender {
     /// ## Returns:
     /// - `u128`: The amount of `token` that can be borrowed.
     #[ink(message)]
-    fn max_flash_loan(&self, token: AccountId) -> Result<u128, Error>;
+    fn max_flash_loan(&self, token: AccountId) -> Result<u128>;
 }
 
 /// The Flash Lender error types.

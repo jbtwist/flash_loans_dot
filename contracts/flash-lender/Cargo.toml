@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 ink = { workspace = true }
-IERC3156-traits = { path = "../../IERC3156-traits", default-features = false }
+IERC3156Traits = { path = "../../IERC-3156-Traits", default-features = false }
 
 [dev-dependencies]
 ink_e2e = { workspace = true }
@@ -18,7 +18,7 @@ path = "lib.rs"
 default = ["std"]
 std = [
     "ink/std",
-    "IERC3156-traits/std",
+    "IERC3156Traits/std",
 ]
 ink-as-dependency = []
 e2e-tests = []
