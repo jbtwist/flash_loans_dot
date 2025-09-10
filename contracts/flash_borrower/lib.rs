@@ -6,12 +6,13 @@ pub mod traits;
 mod flash_receiver {
     use ink::prelude::vec::Vec;
     use ink::scale::{Decode, Error as ScaleError};
+    use flash_lender::FlashLenderRef;
     use IERC3156Traits::{IERC3156FlashBorrower, Action};
 
     #[ink(storage)]
     pub struct FlashBorrower {
         /// Stores the receiver lender's Address.
-        lender: Address,
+        lender: FlashLenderRef,
         /// Stores the last action performed.
         action: Action,
     }

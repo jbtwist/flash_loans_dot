@@ -120,7 +120,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(0)
+                .gas_limit(1000)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("balance_of")))
                         .push_arg(account),
@@ -142,7 +142,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(0)
+                .gas_limit(1000)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer")))
                         .push_arg(receiver)
@@ -176,7 +176,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(0)
+                .gas_limit(1000)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer_from")))
                         .push_arg(receiver)
@@ -214,7 +214,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(receiver)
                 .call_v1()
-                .gas_limit(0)
+                .gas_limit(1000)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("on_flash_loan")))
                         .push_arg(sender)

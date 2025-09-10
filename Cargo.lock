@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "IERC3156Traits"
+name = "IERC3156_traits"
 version = "0.1.0"
 dependencies = [
  "ink",
@@ -1780,19 +1780,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "flash-borrower"
+name = "flash_borrower"
 version = "0.1.0"
 dependencies = [
- "IERC3156Traits",
+ "IERC3156_traits",
  "ink",
  "ink_e2e",
 ]
 
 [[package]]
-name = "flash-lender"
+name = "flash_lender"
 version = "0.1.0"
 dependencies = [
- "IERC3156Traits",
+ "IERC3156_traits",
  "ink",
  "ink_e2e",
 ]

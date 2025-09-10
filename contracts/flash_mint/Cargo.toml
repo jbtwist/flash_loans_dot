@@ -1,7 +1,7 @@
 [package]
-name = "IERC3156Traits"
+name = "flash_mint"
 version = "0.1.0"
-authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>"]
+authors = ["Rodrigo Ramos X <rodrx20@gmail.com>"]
 edition = "2021"
 
 [dependencies]
@@ -15,6 +15,6 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = [
-    "ink/std",
-]
+std = ["ink/std"]
+ink-as-dependency = []
+e2e-tests = []
