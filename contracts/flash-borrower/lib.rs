@@ -1,58 +1,36 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+pub mod traits;
+
 #[ink::contract]
-mod Receiver {
+mod flash_receiver {
     use ink::prelude::vec::Vec;
     use ink::scale::{Decode, Error as ScaleError};
-
-    #[derive(Debug, PartialEq, Eq)]
-    #[ink::scale_derive(Encode, Decode, TypeInfo)]
-    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
-    pub enum Action {
-        Arbitrage,
-        Other,
-    }
-
-    #[ink(event)]
-    pub struct ActionPerformed {
-        #[ink(topic)]
-        action: Action,
-        amount: Balance,
-        fee: Balance,
-    }
+    use crate::traits::{IERC3156FlashBorrower, Action};
 
     #[ink(storage)]
-    pub struct Receiver {
+    pub struct FlashBorrower {
         /// Stores the receiver lender's AccountId.
         lender: AccountId,
         /// Stores the last action performed.
         action: Action,
     }
 
-    impl Receiver {
-        /// Constructor that initializes the receiver with a lender.
-        #[ink(constructor)]
-        pub fn new(lender: AccountId) -> Self {
-            Self {
-                lender,
-                action: Action::Arbitrage,
-            }
-        }
-
-        /// Implements the logic for handling a flash loan.
+    impl IERC3156FlashBorrower for FlashBorrower {
+        /// See {traits.rs-on_flash_loan}
         #[ink(message)]
-        pub fn on_flash_loan(
+        fn on_flash_loan(
             &mut self,
             initiator: AccountId,
             amount: Balance,
             fee: Balance,
             data: Vec<u8>,
         ) -> bool {
-            let caller = Self::env().caller();
+            let caller = self.env().caller();
             if caller != self.lender {
                 return false;
             }
-            if initiator != Self::env().account_id() {
+            if initiator != self.env().account_id() {
                 return false;
             }
 
@@ -64,27 +42,28 @@ mod Receiver {
             match decoded_action {
                 Action::Arbitrage => {
                     // Mock an arbitrage action, this should be an EV+ operation
-                    self.action = Action::Arbitrage;
                     // TODO: Profitable logic would go here
                     // Emit event
-                    Self::env().emit_event(ActionPerformed {
-                        action: Action::Arbitrage,
-                        amount,
-                        fee,
-                    });
                 }
                 Action::Other => {
                     // Perform other action
-                    self.action = Action::Other;
-                    Self::env().emit_event(ActionPerformed {
-                        action: Action::Other,
-                        amount,
-                        fee,
-                    });
                 }
             }
-
             true
+        }
+    }
+
+    impl FlashBorrower {
+        /// Creates a new [`FlashBorrower`] instance.
+        ///
+        /// ## Parameters:
+        /// - `lender_`: The trusted flash lender contract.
+        #[ink(constructor)]
+        pub fn new(lender: AccountId) -> Self {
+            Self {
+                lender,
+                action: Action::Arbitrage,
+            }
         }
 
         /// Decodes the data into an action

@@ -1,12 +1,11 @@
 [package]
-name = "flash-lender"
+name = "flash-borrower"
 version = "0.1.0"
-authors = ["Lucas Grasso<lucasgrassoramos@gmail.com>"]
+authors = ["Juan Villarejo <juan.villarejo.ortiz@gmail.com>", "Lucas Grasso <lucasgrassoramos@gmail.com>"]
 edition = "2021"
 
 [dependencies]
 ink = { workspace = true }
-IERC3156-traits = { path = "../../IERC3156-traits", default-features = false }
 
 [dev-dependencies]
 ink_e2e = { workspace = true }
@@ -16,9 +15,6 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = [
-    "ink/std",
-    "IERC3156-traits/std",
-]
+std = ["ink/std"]
 ink-as-dependency = []
 e2e-tests = []

@@ -1,8 +1,8 @@
 [workspace]
 members = [
+    "IERC3156-traits",
     "contracts/flash-lender",
-    "contracts/flash-mint",
-    "contracts/flash-receiver",
+    "contracts/flash-borrower",
 ]
 
 # Optional, to avoid redundant target dirs for each contract

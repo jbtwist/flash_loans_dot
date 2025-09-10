@@ -1,10 +1,12 @@
+//! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-//! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
+/// The Flash lender result type.
+pub type Result<T> = core::result::Result<T, Error>;
 
 /// A trait for flash lending of ERC20 tokens, following the IERC3156 standard.
 #[ink::trait_definition]
-pub trait FlashLender {
+pub trait IERC3156FlashLender {
     /// Loan `amount` tokens to `receiver`, and take them back plus a `flashFee` after the callback.
     ///
     /// ## Params:
@@ -34,11 +36,7 @@ pub trait FlashLender {
     /// ## Returns:
     /// - `u128`: The fee to be charged on top of the returned principal.
     #[ink(message)]
-    fn flash_fee(
-        &self,
-        token: AccountId,
-        amount: u128,
-    ) -> Result<u128, Error>;
+    fn flash_fee(&self, token: AccountId, amount: u128) -> Result<u128, Error>;
 
     /// The amount of currency available to be lent.
     ///
@@ -48,14 +46,12 @@ pub trait FlashLender {
     /// ## Returns:
     /// - `u128`: The amount of `token` that can be borrowed.
     #[ink(message)]
-    fn max_flash_loan(
-        &self,
-        token: AccountId,
-    ) -> Result<u128, Error>;
+    fn max_flash_loan(&self, token: AccountId) -> Result<u128, Error>;
 }
 
 /// The Flash Lender error types.
-#[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode, scale_info::TypeInfo)]
+#[derive(Debug, PartialEq, Eq)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
 pub enum Error {
     /// Returned if currency is not available.
     UnsupportedCurrency,
