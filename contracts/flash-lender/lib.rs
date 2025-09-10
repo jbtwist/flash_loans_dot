@@ -10,7 +10,7 @@ mod flash_lender {
     #[ink(storage)]
     #[derive(SpreadAllocate)]
     pub struct FlashLender {
-        supported_tokens: Mapping<AccountId, bool>,
+        supported_tokens: Mapping<Address, bool>,
         fee: u128,
     }
 
@@ -79,7 +79,7 @@ mod flash_lender {
         /// - `fee`: The percentage of the loan `amount` that needs to be repaid,
         ///   in addition to `amount`. (1 == 0.01%).
         #[ink(constructor)]
-        pub fn new(supported_tokens: Vec<AccountId>, fee: u128) -> Self {
+        pub fn new(supported_tokens: Vec<Address>, fee: u128) -> Self {
             ink_lang::utils::initialize_contract(|contract: &mut Self| {
                 for token in supported_tokens {
                     contract.supported_tokens.insert(&token, ());
@@ -90,7 +90,7 @@ mod flash_lender {
 
         /// Creates a default [`FlashLender`].
         #[ink(constructor)]
-        pub fn default(supported_tokens: Vec<AccountId>, fee: u128) -> Self {
+        pub fn default(supported_tokens: Vec<Address>, fee: u128) -> Self {
             ink_lang::utils::initialize_contract(|contract: &mut Self| {
                 contract.fee = 1;
             })
@@ -120,7 +120,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(1000)
+                .gas_limit(0)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("balance_of")))
                         .push_arg(account),
@@ -142,7 +142,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(1000)
+                .gas_limit(0)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer")))
                         .push_arg(receiver)
@@ -176,7 +176,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
-                .gas_limit(1000)
+                .gas_limit(0)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer_from")))
                         .push_arg(receiver)
@@ -203,7 +203,7 @@ mod flash_lender {
         /// ## Returns:
         /// - A boolean indicating whether the callback succeeded.
         fn _call_IERC3156FlashBorrower_callback(
-            sender: AccountId,
+            sender: Address,
             receiver: Address,
             token: Address,
             amount: u128,
@@ -214,7 +214,7 @@ mod flash_lender {
             build_call::<DefaultEnvironment>()
                 .call(receiver)
                 .call_v1()
-                .gas_limit(1000)
+                .gas_limit(0)
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("on_flash_loan")))
                         .push_arg(sender)
