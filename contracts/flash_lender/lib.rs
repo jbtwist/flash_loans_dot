@@ -5,6 +5,7 @@ mod flash_lender {
     use ink::{
         env::{
             call::{build_call, ExecutionInput, Selector},
+            hash::Keccak256,
             DefaultEnvironment,
         },
         storage::Mapping,
@@ -14,7 +15,7 @@ mod flash_lender {
     #[ink(storage)]
     pub struct FlashLender {
         supported_tokens: Mapping<AccountId, bool>,
-        fee: u128,
+        fee: u128, // 1 = 0.01%
     }
 
     impl IERC3156FlashLender for FlashLender {
@@ -40,21 +41,24 @@ mod flash_lender {
             self.supported_tokens
                 .get(token)
                 .ok_or(Error::UnsupportedCurrency)?;
-            let fee = Self::_flash_fee(self.fee, amount);
-            if !Self::_call_erc20_transfer(receiver, token, amount) {
+            let fee = self._flash_fee(self.fee, amount);
+            if !self._call_erc20_transfer(receiver, token, amount) {
                 return Err(Error::TransferFailed);
             }
-            if !Self::_call_ierc3156_flash_borrower_callback(
+            if self._call_ierc3156_flash_borrower_callback(
                 self.env().caller(),
                 receiver,
                 token,
                 amount,
                 fee,
                 data,
-            ) {
+            ) != self
+                .env()
+                .hash_bytes::<Keccak256>(b"ERC3156FlashBorrower.onFlashLoan")
+            {
                 return Err(Error::CallbackFailed);
             }
-            if !Self::_call_erc20_transfer_from(
+            if !self._call_erc20_transfer_from(
                 self.env().account_id(),
                 receiver,
                 token,
@@ -79,7 +83,7 @@ mod flash_lender {
             self.supported_tokens
                 .get(token)
                 .ok_or(Error::UnsupportedCurrency)?;
-            Ok(Self::_flash_fee(self.fee, amount))
+            Ok(self._flash_fee(self.fee, amount))
         }
 
         /// The amount of currency available to be lent.
@@ -96,7 +100,7 @@ mod flash_lender {
                 .get(token)
                 .ok_or(Error::UnsupportedCurrency)?;
             if token_exists {
-                Ok(Self::_call_erc20_balance_of(token, self.env().caller()))
+                Ok(self._call_erc20_balance_of(token, self.env().caller()))
             } else {
                 Ok(0)
             }
@@ -122,19 +126,6 @@ mod flash_lender {
             }
         }
 
-        /// Creates a default [`FlashLender`].
-        #[ink(constructor)]
-        pub fn default_fee(_supported_tokens: Vec<AccountId>) -> Self {
-            let mut supported_tokens = Mapping::default();
-            for token in _supported_tokens {
-                supported_tokens.insert(&token, &true);
-            }
-            Self {
-                supported_tokens,
-                fee: 1,
-            }
-        }
-
         /// Internal function returning the fee to be charged for a given loan.  
         /// No safety checks are performed.
         ///
@@ -143,7 +134,7 @@ mod flash_lender {
         ///
         /// ## Returns:
         /// - `u256`: The fee to be charged on top of the returned principal.
-        fn _flash_fee(fee: u128, amount: u128) -> u128 {
+        fn _flash_fee(&self, fee: u128, amount: u128) -> u128 {
             amount * fee / 10000
         }
 
@@ -155,7 +146,7 @@ mod flash_lender {
         ///
         /// ## Returns:
         /// - The balance of `account` as `u128`.
-        fn _call_erc20_balance_of(token: AccountId, account: AccountId) -> u128 {
+        fn _call_erc20_balance_of(&self, token: AccountId, account: AccountId) -> u128 {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
@@ -177,7 +168,12 @@ mod flash_lender {
         ///
         /// ## Returns:
         /// - A boolean indicating whether the transfer succeeded.
-        fn _call_erc20_transfer(receiver: AccountId, token: AccountId, amount: u128) -> bool {
+        fn _call_erc20_transfer(
+            &self,
+            receiver: AccountId,
+            token: AccountId,
+            amount: u128,
+        ) -> bool {
             build_call::<DefaultEnvironment>()
                 .call(token)
                 .call_v1()
@@ -206,6 +202,7 @@ mod flash_lender {
         /// ## Returns:
         /// - A boolean indicating whether the transfer succeeded.
         fn _call_erc20_transfer_from(
+            &self,
             this_address: AccountId,
             receiver: AccountId,
             token: AccountId,
@@ -242,13 +239,14 @@ mod flash_lender {
         /// ## Returns:
         /// - A boolean indicating whether the callback succeeded.
         fn _call_ierc3156_flash_borrower_callback(
+            &self,
             sender: AccountId,
             receiver: AccountId,
             token: AccountId,
             amount: u128,
             fee: u128,
             data: Vec<u8>,
-        ) -> bool {
+        ) -> [u8; 32] {
             build_call::<DefaultEnvironment>()
                 .call(receiver)
                 .call_v1()
@@ -261,7 +259,7 @@ mod flash_lender {
                         .push_arg(fee)
                         .push_arg(data),
                 )
-                .returns::<bool>()
+                .returns::<[u8; 32]>()
                 .invoke()
         }
     }
