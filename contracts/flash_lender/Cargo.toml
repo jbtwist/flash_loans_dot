@@ -7,8 +7,8 @@ edition = "2021"
 [dependencies]
 ink = { workspace = true }
 scale-info = { workspace = true }
-IERC20 = { path = "../../IERC20", default-features = false }
-IERC3156 = { path = "../../IERC3156", default-features = false }
+ierc20 = { path = "../../ierc20", default-features = false }
+ierc3156 = { path = "../../ierc3156", default-features = false }
 
 [dev-dependencies]
 ink_e2e = { workspace = true }
@@ -20,8 +20,8 @@ path = "lib.rs"
 default = ["std"]
 std = [
     "ink/std",
-    "IERC20/std",
-    "IERC3156/std",
+    "ierc20/std",
+    "ierc3156/std",
 ]
 ink-as-dependency = []
 e2e-tests = []

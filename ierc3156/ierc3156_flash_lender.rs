@@ -1,6 +1,7 @@
 //! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+use ierc20::Error as ERC20Error;
 use ink::primitives::AccountId;
 
 /// The Flash lender result type.
@@ -61,8 +62,8 @@ pub enum Error {
     TransferFailed,
     /// Returned if external `IERC3156FlashBorrower` callback failed.
     CallbackFailed,
-    /// Returned if external `IERC20` repay call failed.
-    RepayFailed,
-    // Returned if loan callback fails
-    LoanCallbackFailed,
+    /// Returned if error related to ERC20 token happened.
+    ERC20Error(ERC20Error),
+    /// Returned if error related to ERC3156Borrower happened.
+    ERC3156BorrowerLoanError,
 }

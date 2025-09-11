@@ -2,12 +2,12 @@
 
 #[ink::contract]
 mod flash_lender {
-    use ink::{env::hash::Keccak256, storage::Mapping};
-    use IERC20::IERC20;
-    use IERC3156::{
+    use ierc20::IERC20;
+    use ierc3156::{
         ierc3156_flash_borrower::IERC3156FlashBorrower,
         ierc3156_flash_lender::{Error, IERC3156FlashLender, Result},
     };
+    use ink::{env::hash::Keccak256, storage::Mapping};
 
     #[ink(storage)]
     pub struct FlashLender {
@@ -39,9 +39,8 @@ mod flash_lender {
                 .get(token)
                 .ok_or(Error::UnsupportedCurrency)?;
             let fee = self._flash_fee(self.fee, amount);
-            if !self._call_erc20_transfer(receiver, token, amount) {
-                return Err(Error::TransferFailed);
-            }
+            self._call_erc20_transfer(receiver, token, amount)
+                .map_err(|e| Error::ERC20Error(e))?;
             let callback_result = self._call_ierc3156_flash_borrower_callback(
                 self.env().caller(),
                 token,
@@ -56,15 +55,8 @@ mod flash_lender {
             {
                 return Err(Error::CallbackFailed);
             }
-            if !self._call_erc20_transfer_from(
-                self.env().account_id(),
-                receiver,
-                token,
-                amount,
-                fee,
-            ) {
-                return Err(Error::RepayFailed);
-            }
+            self._call_erc20_transfer_from(self.env().account_id(), receiver, token, amount, fee)
+                .map_err(|e: ierc20::Error| Error::ERC20Error(e))?;
             Ok(true)
         }
 
@@ -163,7 +155,7 @@ mod flash_lender {
             receiver: AccountId,
             token: AccountId,
             amount: u128,
-        ) -> bool {
+        ) -> ierc20::Result<bool> {
             let mut erc20: ink::contract_ref!(IERC20) = token.into();
             erc20.transfer(receiver, amount)
         }
@@ -189,7 +181,7 @@ mod flash_lender {
             token: AccountId,
             amount: u128,
             fee: u128,
-        ) -> bool {
+        ) -> ierc20::Result<bool> {
             let mut erc20: ink::contract_ref!(IERC20) = token.into();
             erc20.transfer_from(receiver, from, amount + fee)
         }
@@ -219,7 +211,7 @@ mod flash_lender {
             let borrower: ink::contract_ref!(IERC3156FlashBorrower) = token.into();
             borrower
                 .on_flash_loan(sender, token, amount, fee, data)
-                .map_err(|_| Error::LoanCallbackFailed)
+                .map_err(|e| Error::ERC3156BorrowerLoanError)
         }
     }
 }

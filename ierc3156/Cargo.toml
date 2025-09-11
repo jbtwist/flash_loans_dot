@@ -1,11 +1,12 @@
 [package]
-name = "IERC20"
+name = "ierc3156"
 version = "0.1.0"
 authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>"]
 edition = "2021"
 
 [dependencies]
 ink = { workspace = true }
+ierc20 = { path = "../ierc20", default-features = false }
 scale-info = { workspace = true }
 
 [dev-dependencies]
@@ -18,4 +19,5 @@ path = "lib.rs"
 default = ["std"]
 std = [
     "ink/std",
+    "ierc20/std"
 ]

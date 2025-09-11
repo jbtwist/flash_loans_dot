@@ -3,24 +3,6 @@
 version = 4
 
 [[package]]
-name = "IERC20"
-version = "0.1.0"
-dependencies = [
- "ink",
- "ink_e2e",
- "scale-info",
-]
-
-[[package]]
-name = "IERC3156"
-version = "0.1.0"
-dependencies = [
- "ink",
- "ink_e2e",
- "scale-info",
-]
-
-[[package]]
 name = "Inflector"
 version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1793,8 +1775,8 @@ dependencies = [
 name = "flash_borrower"
 version = "0.1.0"
 dependencies = [
- "IERC20",
- "IERC3156",
+ "ierc20",
+ "ierc3156",
  "ink",
  "ink_e2e",
  "scale-info",
@@ -1804,8 +1786,8 @@ dependencies = [
 name = "flash_lender"
 version = "0.1.0"
 dependencies = [
- "IERC20",
- "IERC3156",
+ "ierc20",
+ "ierc3156",
  "ink",
  "ink_e2e",
  "scale-info",
@@ -2674,6 +2656,25 @@ checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
+]
+
+[[package]]
+name = "ierc20"
+version = "0.1.0"
+dependencies = [
+ "ink",
+ "ink_e2e",
+ "scale-info",
+]
+
+[[package]]
+name = "ierc3156"
+version = "0.1.0"
+dependencies = [
+ "ierc20",
+ "ink",
+ "ink_e2e",
+ "scale-info",
 ]
 
 [[package]]

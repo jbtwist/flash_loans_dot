@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "IERC20",
-    "IERC3156",
+    "ierc20",
+    "ierc3156",
     "contracts/flash_lender",
     "contracts/flash_borrower",
 ]

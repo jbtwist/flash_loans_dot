@@ -2,6 +2,9 @@
 
 use ink::primitives::AccountId;
 
+/// The IERC20 result type.
+pub type Result<T> = core::result::Result<T, Error>;
+
 /// Emitted when `value` tokens are moved from one account (`from`) to another (`to`).
 ///
 /// Note: `value` may be zero.
@@ -42,7 +45,7 @@ pub trait IERC20 {
     ///
     /// Emits a `Transfer` event.
     #[ink(message)]
-    fn transfer(&mut self, to: AccountId, value: u128) -> bool;
+    fn transfer(&mut self, to: AccountId, value: u128) -> Result<bool>;
 
     /// Returns the remaining number of tokens that `spender` can spend
     /// on behalf of `owner` through `transfer_from`.
@@ -55,7 +58,7 @@ pub trait IERC20 {
     ///
     /// Emits an `Approval` event.
     #[ink(message)]
-    fn approve(&mut self, spender: AccountId, value: u128) -> bool;
+    fn approve(&mut self, spender: AccountId, value: u128) -> Result<bool>;
 
     /// Transfers `value` tokens from `from` to `to` using the allowance mechanism.
     /// `value` is then deducted from the caller’s allowance.
@@ -64,5 +67,38 @@ pub trait IERC20 {
     ///
     /// Emits a `Transfer` event.
     #[ink(message)]
-    fn transfer_from(&mut self, from: AccountId, to: AccountId, value: u128) -> bool;
+    fn transfer_from(&mut self, from: AccountId, to: AccountId, value: u128) -> Result<bool>;
+}
+
+#[derive(Debug, PartialEq, Eq)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+pub enum Error {
+    /// Indicates an error related to the current balance of a sender.
+    /// Used in transfers.
+    InsufficientBalance {
+        sender: AccountId,
+        balance: u128,
+        needed: u128,
+    },
+
+    /// Indicates a failure with the token sender. Used in transfers.
+    InvalidSender { sender: AccountId },
+
+    /// Indicates a failure with the token receiver. Used in transfers.
+    InvalidReceiver { receiver: AccountId },
+
+    /// Indicates a failure with the spender’s allowance. Used in transfers.
+    InsufficientAllowance {
+        spender: AccountId,
+        allowance: u128,
+        needed: u128,
+    },
+
+    /// Indicates a failure with the approver of a token to be approved.
+    /// Used in approvals.
+    InvalidApprover { approver: AccountId },
+
+    /// Indicates a failure with the spender to be approved.
+    /// Used in approvals.
+    InvalidSpender { spender: AccountId },
 }

@@ -2,12 +2,12 @@
 
 #[ink::contract]
 mod flash_receiver {
+    use ierc20::IERC20;
+    use ierc3156::ierc3156_flash_borrower::{Error, IERC3156FlashBorrower, Result};
+    use ierc3156::ierc3156_flash_lender::IERC3156FlashLender;
     use ink::env::hash::Keccak256;
     use ink::prelude::vec::Vec;
-    use ink::scale::{Decode, Encode, Error as ScaleError};
-    use IERC20::IERC20;
-    use IERC3156::ierc3156_flash_borrower::{Error, IERC3156FlashBorrower, Result};
-    use IERC3156::ierc3156_flash_lender::IERC3156FlashLender;
+    use ink::scale::{Decode, Encode};
 
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
@@ -90,9 +90,11 @@ mod flash_receiver {
             let allowance = erc20.allowance(self.env().account_id(), self.lender);
             let fee = lender
                 .flash_fee(token, amount)
-                .map_err(|_| Error::UnsupportedCurrency)?;
+                .map_err(|e| Error::ERC3156LenderError(e))?;
             let repayment = amount + fee;
-            erc20.approve(self.lender, allowance + repayment);
+            erc20
+                .approve(self.lender, allowance + repayment)
+                .map_err(|e| Error::ERC20Error(e))?;
             lender
                 .flash_loan(
                     self.env().account_id(),
@@ -100,7 +102,7 @@ mod flash_receiver {
                     amount,
                     self.encode_action(Action::Normal),
                 )
-                .map_err(|_| Error::LoanFailed)?;
+                .map_err(|e| Error::ERC3156LenderError(e))?;
             Ok(())
         }
     }

@@ -1,6 +1,8 @@
 //! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+use crate::ierc3156_flash_lender::Error as LenderError;
+use ierc20::Error as ERC20Error;
 use ink::primitives::AccountId;
 
 /// The Flash borrower result type.
@@ -56,8 +58,8 @@ pub enum Error {
     UntrustedLoanInitiator,
     // Returned when decoding data failed.
     ScaleDecodingErr,
-    /// Returned if currency is not available.
-    UnsupportedCurrency,
-    /// Returned if loan fails
-    LoanFailed,
+    /// Error related to ERC3156.
+    ERC3156LenderError(LenderError),
+    /// Error related to ERC20.
+    ERC20Error(ERC20Error),
 }

@@ -2,24 +2,14 @@
 
 We're implementing flash loans (EIP-3156) solution into the Polkadot echosystem
 
-## Setup
+See [ERC-3156](https://eips.ethereum.org/EIPS/eip-3156)
 
-In order to develop using ink, we have to follow the official tutorial here: https://use.ink/docs/v5/getting-started/setup/
+## How to setup
 
-- **Step 1:** Install cargo-contract:
+See [Ink! docs](https://use.ink/docs/v5/getting-started/setup/)
 
-```bash
-cargo install cargo-contract
-```
-
-- **Step 2:** IInstall substrate-contracts-node:
+## Compilation
 
 ```bash
-cargo install contracts-node
-```
-
-- **Step 3:** Build contracts:
-
-```bash
-cargo build --release --workspace
+cargo contract build
 ```
