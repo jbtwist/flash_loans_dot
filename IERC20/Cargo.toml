@@ -1,0 +1,21 @@
+[package]
+name = "IERC20"
+version = "0.1.0"
+authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+ink = { workspace = true }
+scale-info = { workspace = true }
+
+[dev-dependencies]
+ink_e2e = { workspace = true }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+]

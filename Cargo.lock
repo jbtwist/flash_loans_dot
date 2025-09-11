@@ -3,6 +3,15 @@
 version = 4
 
 [[package]]
+name = "IERC20"
+version = "0.1.0"
+dependencies = [
+ "ink",
+ "ink_e2e",
+ "scale-info",
+]
+
+[[package]]
 name = "IERC3156"
 version = "0.1.0"
 dependencies = [
