@@ -1793,6 +1793,7 @@ dependencies = [
 name = "flash_borrower"
 version = "0.1.0"
 dependencies = [
+ "IERC20",
  "IERC3156",
  "ink",
  "ink_e2e",

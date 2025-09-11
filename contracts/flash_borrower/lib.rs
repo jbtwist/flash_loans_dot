@@ -4,8 +4,10 @@
 mod flash_receiver {
     use ink::env::hash::Keccak256;
     use ink::prelude::vec::Vec;
-    use ink::scale::{Decode, Error as ScaleError};
+    use ink::scale::{Decode, Encode, Error as ScaleError};
+    use IERC20::IERC20;
     use IERC3156::ierc3156_flash_borrower::{Error, IERC3156FlashBorrower, Result};
+    use IERC3156::ierc3156_flash_lender::IERC3156FlashLender;
 
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
@@ -72,6 +74,35 @@ mod flash_receiver {
                 .env()
                 .hash_bytes::<Keccak256>(b"ERC3156FlashBorrower.onFlashLoan"))
         }
+
+        /// Initiates a flash loan from the trusted lender.
+        ///
+        /// Prepares the encoded action data, checks and increases allowance if necessary,
+        /// and requests a flash loan from the lender.
+        ///
+        /// ## Parameters:
+        /// - `token`: The address of the token to borrow.
+        /// - `amount`: The amount of tokens to borrow.
+        #[ink(message)]
+        fn flash_borrow(&self, token: AccountId, amount: u128) -> Result<()> {
+            let mut erc20: ink::contract_ref!(IERC20) = token.into();
+            let lender: ink::contract_ref!(IERC3156FlashLender) = self.lender.into();
+            let allowance = erc20.allowance(self.env().account_id(), self.lender);
+            let fee = lender
+                .flash_fee(token, amount)
+                .map_err(|_| Error::UnsupportedCurrency)?;
+            let repayment = amount + fee;
+            erc20.approve(self.lender, allowance + repayment);
+            lender
+                .flash_loan(
+                    self.env().account_id(),
+                    token,
+                    amount,
+                    self.encode_action(Action::Normal),
+                )
+                .map_err(|_| Error::LoanFailed)?;
+            Ok(())
+        }
     }
 
     impl FlashBorrower {
@@ -90,6 +121,11 @@ mod flash_receiver {
         /// Decodes the data into an action
         fn decode_action(&self, data: Vec<u8>) -> Result<Action> {
             Action::decode(&mut &data[..]).map_err(|_| Error::ScaleDecodingErr)
+        }
+
+        /// Encodes action into data
+        fn encode_action(&self, action: Action) -> Vec<u8> {
+            Action::encode(&action)
         }
     }
 }

@@ -34,7 +34,7 @@ pub trait IERC3156FlashBorrower {
         data: Vec<u8>,
     ) -> Result<[u8; 32]>;
 
-    /* /// Initiates a flash loan from the trusted lender.
+    /// Initiates a flash loan from the trusted lender.
     ///
     /// Prepares the encoded action data, checks and increases allowance if necessary,
     /// and requests a flash loan from the lender.
@@ -43,7 +43,7 @@ pub trait IERC3156FlashBorrower {
     /// - `token`: The address of the token to borrow.
     /// - `amount`: The amount of tokens to borrow.
     #[ink(message)]
-    fn flash_borrow(&self, token: AccountId, amount: u128); */
+    fn flash_borrow(&self, token: AccountId, amount: u128) -> Result<()>;
 }
 
 /// The Flash Receiver error types.
@@ -56,4 +56,8 @@ pub enum Error {
     UntrustedLoanInitiator,
     // Returned when decoding data failed.
     ScaleDecodingErr,
+    /// Returned if currency is not available.
+    UnsupportedCurrency,
+    /// Returned if loan fails
+    LoanFailed,
 }
