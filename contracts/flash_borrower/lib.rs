@@ -1,47 +1,65 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-pub mod traits;
-
 #[ink::contract]
 mod flash_receiver {
+    use ink::env::hash::Keccak256;
     use ink::prelude::vec::Vec;
     use ink::scale::{Decode, Error as ScaleError};
-    use flash_lender::FlashLenderRef;
-    use IERC3156Traits::{IERC3156FlashBorrower, Action};
+    use IERC3156::ierc3156_flash_borrower::{Error, IERC3156FlashBorrower, Result};
+
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum Action {
+        Normal,
+        Other,
+    }
 
     #[ink(storage)]
     pub struct FlashBorrower {
-        /// Stores the receiver lender's Address.
-        lender: FlashLenderRef,
+        /// Stores the receiver lender's AccountId.
+        lender: AccountId,
         /// Stores the last action performed.
         action: Action,
     }
 
     impl IERC3156FlashBorrower for FlashBorrower {
-        /// See {traits.rs-on_flash_loan}
+        /// ERC-3156 Flash loan callback.
+        ///
+        /// This function is called by the lender after the tokens have been
+        /// transferred. It verifies the caller and initiator, decodes the action,
+        /// and executes custom logic depending on the action type.
+        ///
+        /// ## Parameters:
+        /// - `initiator`: The account that initiated the loan. Must be `self`.
+        /// - `token`: The address of the token that was lent.
+        /// - `amount`: The amount of tokens borrowed.
+        /// - `fee`: The fee charged by the lender.
+        /// - `data`: Encoded arbitrary data, usually used to signal the type of action.
+        ///
+        /// ## Returns:
+        /// - A `bool` hash signaling successful execution of the callback.
         #[ink(message)]
         fn on_flash_loan(
-            &mut self,
-            initiator: Address,
+            &self,
+            initiator: AccountId,
+            token: AccountId,
             amount: Balance,
             fee: Balance,
             data: Vec<u8>,
-        ) -> bool {
+        ) -> Result<[u8; 32]> {
             let caller = self.env().caller();
             if caller != self.lender {
-                return false;
+                return Err(Error::UntrustedLender);
             }
             if initiator != self.env().account_id() {
-                return false;
+                return Err(Error::UntrustedLoanInitiator);
             }
 
-            let decoded_action = match self.decode_action(data) {
-                Ok(action) => action,
-                Err(_) => return false,
-            };
+            let decoded_action = self.decode_action(data)?;
 
             match decoded_action {
-                Action::Arbitrage => {
+                Action::Normal => {
                     // Mock an arbitrage action, this should be an EV+ operation
                     // TODO: Profitable logic would go here
                     // Emit event
@@ -50,7 +68,9 @@ mod flash_receiver {
                     // Perform other action
                 }
             }
-            true
+            Ok(self
+                .env()
+                .hash_bytes::<Keccak256>(b"ERC3156FlashBorrower.onFlashLoan"))
         }
     }
 
@@ -60,16 +80,16 @@ mod flash_receiver {
         /// ## Parameters:
         /// - `lender_`: The trusted flash lender contract.
         #[ink(constructor)]
-        pub fn new(lender: Address) -> Self {
+        pub fn new(lender: AccountId) -> Self {
             Self {
                 lender,
-                action: Action::Arbitrage,
+                action: Action::Normal,
             }
         }
 
         /// Decodes the data into an action
-        fn decode_action(&self, data: Vec<u8>) -> Result<Action, ScaleError> {
-            Action::decode(&mut &data[..])
+        fn decode_action(&self, data: Vec<u8>) -> Result<Action> {
+            Action::decode(&mut &data[..]).map_err(|_| Error::ScaleDecodingErr)
         }
     }
 }

@@ -1,6 +1,8 @@
 //! Trait definition for a Flash Lender contract compatible with `IERC3156FlashLender`.
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+use ink::primitives::AccountId;
+
 /// The Flash lender result type.
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -20,9 +22,9 @@ pub trait IERC3156FlashLender {
     /// - `bool`: True if the flash loan succeeds.
     #[ink(message)]
     fn flash_loan(
-        &mut self,
-        receiver: Address,
-        token: Address,
+        &self,
+        receiver: AccountId,
+        token: AccountId,
         amount: u128,
         data: Vec<u8>,
     ) -> Result<bool>;
@@ -36,7 +38,7 @@ pub trait IERC3156FlashLender {
     /// ## Returns:
     /// - `u128`: The fee to be charged on top of the returned principal.
     #[ink(message)]
-    fn flash_fee(&self, token: Address, amount: u128) -> Result<u128>;
+    fn flash_fee(&self, token: AccountId, amount: u128) -> Result<u128>;
 
     /// The amount of currency available to be lent.
     ///
@@ -46,7 +48,7 @@ pub trait IERC3156FlashLender {
     /// ## Returns:
     /// - `u128`: The amount of `token` that can be borrowed.
     #[ink(message)]
-    fn max_flash_loan(&self, token: Address) -> Result<u128>;
+    fn max_flash_loan(&self, token: AccountId) -> Result<u128>;
 }
 
 /// The Flash Lender error types.

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "IERC3156_traits",
+    "IERC3156",
     "contracts/flash_lender",
     "contracts/flash_borrower",
 ]
@@ -11,4 +11,5 @@ edition = "2021"
 
 [workspace.dependencies]
 ink = { version = "5.1.1", default-features = false }
+scale-info = { version = "2.11.6", default-features = false, features = ["derive"] }
 ink_e2e = { version = "5.1.1" }

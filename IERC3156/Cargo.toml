@@ -1,11 +1,12 @@
 [package]
-name = "IERC3156_traits"
+name = "IERC3156"
 version = "0.1.0"
 authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>"]
 edition = "2021"
 
 [dependencies]
 ink = { workspace = true }
+scale-info = { workspace = true }
 
 [dev-dependencies]
 ink_e2e = { workspace = true }
