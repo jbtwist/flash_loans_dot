@@ -6,6 +6,8 @@ members = [
     "contracts/flash_borrower",
 ]
 
+authors = ["Lucas Grasso <lucasgrassoramos@gmail.com>", "Juan Villarejo <juan.villarejo.ortiz@gmail.com>", "Rodrigo Ramos X <rodrx20@gmail.com>"]
+
 # Optional, to avoid redundant target dirs for each contract
 [workspace.package]
 edition = "2021"
