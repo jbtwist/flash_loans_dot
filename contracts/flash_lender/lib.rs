@@ -2,15 +2,12 @@
 
 #[ink::contract]
 mod flash_lender {
-    use ink::{
-        env::{
-            call::{build_call, ExecutionInput, Selector},
-            hash::Keccak256,
-            DefaultEnvironment,
-        },
-        storage::Mapping,
+    use ink::{env::hash::Keccak256, storage::Mapping};
+    use IERC20::IERC20;
+    use IERC3156::{
+        ierc3156_flash_borrower::IERC3156FlashBorrower,
+        ierc3156_flash_lender::{Error, IERC3156FlashLender, Result},
     };
-    use IERC3156::ierc3156_flash_lender::{Error, IERC3156FlashLender, Result};
 
     #[ink(storage)]
     pub struct FlashLender {
@@ -45,16 +42,17 @@ mod flash_lender {
             if !self._call_erc20_transfer(receiver, token, amount) {
                 return Err(Error::TransferFailed);
             }
-            if self._call_ierc3156_flash_borrower_callback(
+            let callback_result = self._call_ierc3156_flash_borrower_callback(
                 self.env().caller(),
-                receiver,
                 token,
                 amount,
                 fee,
                 data,
-            ) != self
-                .env()
-                .hash_bytes::<Keccak256>(b"ERC3156FlashBorrower.onFlashLoan")
+            )?;
+            if callback_result
+                != self
+                    .env()
+                    .hash_bytes::<Keccak256>(b"ERC3156FlashBorrower.onFlashLoan")
             {
                 return Err(Error::CallbackFailed);
             }
@@ -147,16 +145,8 @@ mod flash_lender {
         /// ## Returns:
         /// - The balance of `account` as `u128`.
         fn _call_erc20_balance_of(&self, token: AccountId, account: AccountId) -> u128 {
-            build_call::<DefaultEnvironment>()
-                .call(token)
-                .call_v1()
-                .gas_limit(1000)
-                .exec_input(
-                    ExecutionInput::new(Selector::new(ink::selector_bytes!("balance_of")))
-                        .push_arg(account),
-                )
-                .returns::<u128>()
-                .invoke()
+            let erc20: ink::contract_ref!(IERC20) = token.into();
+            erc20.balance_of(account)
         }
 
         /// Calls the ERC20 `transfer` function on a given token contract.
@@ -174,17 +164,8 @@ mod flash_lender {
             token: AccountId,
             amount: u128,
         ) -> bool {
-            build_call::<DefaultEnvironment>()
-                .call(token)
-                .call_v1()
-                .gas_limit(1000)
-                .exec_input(
-                    ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer")))
-                        .push_arg(receiver)
-                        .push_arg(amount),
-                )
-                .returns::<bool>()
-                .invoke()
+            let mut erc20: ink::contract_ref!(IERC20) = token.into();
+            erc20.transfer(receiver, amount)
         }
 
         /// Calls the ERC20 `transfer_from` function on a given token contract.
@@ -193,7 +174,7 @@ mod flash_lender {
         /// (`self.env().address()`) to the `receiver`.
         ///
         /// ## Params:
-        /// - `this_address`: address of the smart contract executing this.
+        /// - `from`: address from whom the tokens  will be deducted
         /// - `receiver`: AccountId that will receive the tokens.
         /// - `token`: AccountId of the ERC20 contract.
         /// - `amount`: Principal amount to be transferred.
@@ -203,24 +184,14 @@ mod flash_lender {
         /// - A boolean indicating whether the transfer succeeded.
         fn _call_erc20_transfer_from(
             &self,
-            this_address: AccountId,
+            from: AccountId,
             receiver: AccountId,
             token: AccountId,
             amount: u128,
             fee: u128,
         ) -> bool {
-            build_call::<DefaultEnvironment>()
-                .call(token)
-                .call_v1()
-                .gas_limit(1000)
-                .exec_input(
-                    ExecutionInput::new(Selector::new(ink::selector_bytes!("transfer_from")))
-                        .push_arg(receiver)
-                        .push_arg(this_address)
-                        .push_arg(amount + fee),
-                )
-                .returns::<bool>()
-                .invoke()
+            let mut erc20: ink::contract_ref!(IERC20) = token.into();
+            erc20.transfer_from(receiver, from, amount + fee)
         }
 
         /// Calls the `on_flash_loan` callback on an `IERC3156FlashBorrower` contract.
@@ -230,7 +201,6 @@ mod flash_lender {
         ///
         /// ## Params:
         /// - `sender`: who initiated tx.
-        /// - `receiver`: AccountId of the flash borrower contract.
         /// - `token`: AccountId of the ERC20 token contract used in the loan.
         /// - `amount`: Principal amount borrowed.
         /// - `fee`: Additional fee required for repayment.
@@ -241,26 +211,15 @@ mod flash_lender {
         fn _call_ierc3156_flash_borrower_callback(
             &self,
             sender: AccountId,
-            receiver: AccountId,
             token: AccountId,
             amount: u128,
             fee: u128,
             data: Vec<u8>,
-        ) -> [u8; 32] {
-            build_call::<DefaultEnvironment>()
-                .call(receiver)
-                .call_v1()
-                .gas_limit(1000)
-                .exec_input(
-                    ExecutionInput::new(Selector::new(ink::selector_bytes!("on_flash_loan")))
-                        .push_arg(sender)
-                        .push_arg(token)
-                        .push_arg(amount)
-                        .push_arg(fee)
-                        .push_arg(data),
-                )
-                .returns::<[u8; 32]>()
-                .invoke()
+        ) -> Result<[u8; 32]> {
+            let borrower: ink::contract_ref!(IERC3156FlashBorrower) = token.into();
+            borrower
+                .on_flash_loan(sender, token, amount, fee, data)
+                .map_err(|_| Error::LoanCallbackFailed)
         }
     }
 }

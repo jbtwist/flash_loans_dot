@@ -63,4 +63,6 @@ pub enum Error {
     CallbackFailed,
     /// Returned if external `IERC20` repay call failed.
     RepayFailed,
+    // Returned if loan callback fails
+    LoanCallbackFailed,
 }

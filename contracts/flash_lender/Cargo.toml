@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 ink = { workspace = true }
 scale-info = { workspace = true }
+IERC20 = { path = "../../IERC20", default-features = false }
 IERC3156 = { path = "../../IERC3156", default-features = false }
 
 [dev-dependencies]
@@ -19,6 +20,7 @@ path = "lib.rs"
 default = ["std"]
 std = [
     "ink/std",
+    "IERC20/std",
     "IERC3156/std",
 ]
 ink-as-dependency = []
