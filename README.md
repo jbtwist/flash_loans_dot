@@ -1,3 +1,4 @@
+[![Built with ink!](https://raw.githubusercontent.com/use-ink/ink/master/.images/badge.svg)](https://github.com/use-ink/ink)
 # flash_loans.dot
 
 We're implementing flash loans (EIP-3156) solution into the Polkadot echosystem
